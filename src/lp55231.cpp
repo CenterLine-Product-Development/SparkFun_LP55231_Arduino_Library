@@ -245,7 +245,7 @@ Lp55231::lp_err_code Lp55231::SetChargePumpMode(uint8_t mode)
 {
   uint8_t regVal;
 
-  if(mode&0b11100111 > 0)
+  if((mode&0b11100111) > 0)
   {
     return LP_ERR_INVALID_MODE;
   }
@@ -305,7 +305,6 @@ Lp55231::lp_err_code Lp55231Engines::SetRatiometricDimming(uint8_t channel, bool
 
 Lp55231::lp_err_code Lp55231Engines::LoadProgram(const uint16_t* prog, uint8_t len)
 {
-  uint8_t val;
   uint8_t page;
 
   if(len >= NumInstructions)
@@ -318,9 +317,10 @@ Lp55231::lp_err_code Lp55231Engines::LoadProgram(const uint16_t* prog, uint8_t l
   // required to get into load mode.
   // "Load program mode can be entered from the disabled mode only.  be
   // entered from the disabled mode only."
+  WaitForBusy();
   WriteReg(REG_CNTRL2, 0x00);
+  WaitForBusy();
   WriteReg(REG_CNTRL2, 0x15);
-
   WaitForBusy();
 
   // try to write program from example
@@ -366,7 +366,7 @@ Lp55231::lp_err_code Lp55231Engines::LoadProgram(const uint16_t* prog, uint8_t l
 
 Lp55231::lp_err_code Lp55231Engines::VerifyProgram(const uint16_t* prog, uint8_t len)
 {
-  uint8_t val, page;
+  uint8_t page;
 
   if(len >= NumInstructions)
   {
@@ -480,7 +480,7 @@ Lp55231::lp_err_code Lp55231Engines::SetEnginePC(uint8_t engine, uint8_t addr)
 
   temp = (control_val & ~(0x30 >> (engine * 2)));
 
-  WriteReg(REG_CNTRL2, 0x3ff); // halt engines immediately.
+  WriteReg(REG_CNTRL2, 0x3f); // halt engines immediately.
   WriteReg(REG_CNTRL1, temp);// put engine in load mode
 
   WriteReg(REG_PC1 + engine, addr);
@@ -495,7 +495,7 @@ Lp55231::lp_err_code Lp55231Engines::SetEnginePC(uint8_t engine, uint8_t addr)
 uint8_t Lp55231Engines::GetEnginePC(uint8_t engine)
 {
   // must set Hold to touch PC...
-  uint8_t control_val, pc_val;
+  uint8_t pc_val;
 
   if(engine >= NumEngines)
   {
@@ -663,7 +663,7 @@ void Lp55231Engines::OverrideIntToGPO(bool overrideOn )
   WriteReg(REG_INT_GPIO, regVal);
 }
 
-bool Lp55231Engines::SetIntGPOVal(bool value)
+Lp55231::lp_err_code Lp55231Engines::SetIntGPOVal(bool value)
 {
   uint8_t regVal;
 

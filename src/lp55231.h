@@ -122,7 +122,7 @@ public:
   // Interrupt related
   uint8_t ClearInterrupt();
   void OverrideIntToGPO(bool overrideOn );
-  bool SetIntGPOVal(bool value);
+  lp_err_code SetIntGPOVal(bool value);
 
 
   // Internal diagnostic features
